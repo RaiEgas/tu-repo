@@ -499,7 +499,7 @@
                 <!-- VaR Highlight -->
                 <div class="var-highlight">
                     <div class="var-label">Maximum Potential Loss (Value at Risk)</div>
-                    <div class="var-value">${{ "%.2f"|format(result.var) }}</div>
+                    <div class="var-value">$ {{ "%.2f"|format(result.var) }}</div>
                     <small style="color: #6b7280;">At {{ "%.0f"|format(result.confidence * 100) }}% Confidence Level</small>
                 </div>
 
@@ -512,11 +512,11 @@
                     </div>
                     <div class="metric-card">
                         <div class="metric-label">Position (Nominal)</div>
-                        <div class="metric-value">${{ "%.2f"|format(result.nominal) }}</div>
+                        <div class="metric-value">$ {{ "%.2f"|format(result.nominal) }}</div>
                     </div>
                     <div class="metric-card">
                         <div class="metric-label">Base Price</div>
-                        <div class="metric-value">${{ "%.2f"|format(result.base_price) }}</div>
+                        <div class="metric-value">$ {{ "%.2f"|format(result.base_price) }}</div>
                     </div>
                     <div class="metric-card">
                         <div class="metric-label">Analysis Date</div>
@@ -524,11 +524,11 @@
                     </div>
                     <div class="metric-card">
                         <div class="metric-label">Max Profit (UP)</div>
-                        <div class="metric-value metric-positive">+${{ "%.2f"|format(result.up) }}</div>
+                        <div class="metric-value metric-positive">+ $ {{ "%.2f"|format(result.up) }}</div>
                     </div>
                     <div class="metric-card">
                         <div class="metric-label">Max Loss (VaR)</div>
-                        <div class="metric-value metric-negative">-${{ "%.2f"|format(result.var) }}</div>
+                        <div class="metric-value metric-negative">- $ {{ "%.2f"|format(result.var) }}</div>
                     </div>
                 </div>
 
@@ -556,7 +556,7 @@
                             </tr>
                             <tr>
                                 <td><strong>Percentile Value</strong></td>
-                                <td>${{ "%.2f"|format(result.percentile_value) }}</td>
+                                <td>$ {{ "%.2f"|format(result.percentile_value) }}</td>
                                 <td>Loss threshold for tail risk</td>
                             </tr>
                             <tr>
@@ -566,7 +566,7 @@
                             </tr>
                             <tr>
                                 <td><strong>Mark-to-Market (Base)</strong></td>
-                                <td style="color: #6b7280;">${{ "%.2f"|format(result.mtm_base) }}</td>
+                                <td style="color: #6b7280;">$ {{ "%.2f"|format(result.mtm_base) }}</td>
                                 <td>Current position value</td>
                             </tr>
                         </tbody>
@@ -589,10 +589,10 @@
                                 {% for _, row in result.simulaciones.iterrows() %}
                                 <tr>
                                     <td><code>{{ "%.4f"|format(row['Shock']) }}</code></td>
-                                    <td><strong>${{ "%.2f"|format(row['Precio Simulado']) }}</strong></td>
+                                    <td><strong>$ {{ "%.2f"|format(row['Precio Simulado']) }}</strong></td>
                                     <td>
                                         <span style="color: {% if row['P&L Simulado'] >= 0 %}var(--success-green){% else %}var(--danger-red){% endif %}; font-weight: 600;">
-                                            {% if row['P&L Simulado'] >= 0 %}+{% endif %}${{ "%.2f"|format(row['P&L Simulado']) }}
+                                            {% if row['P&L Simulado'] >= 0 %}+ {% endif %}$ {{ "%.2f"|format(row['P&L Simulado']) }}
                                         </span>
                                     </td>
                                 </tr>
