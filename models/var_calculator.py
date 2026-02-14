@@ -6,7 +6,7 @@ import numpy as np
 import pandas as pd
 
 
-def compute_historical_var(prices, nominal, confidence=0.95):
+def compute_historical_var(prices, nominal, confidence=0.95, base_price=None):
     """
     Calcula VaR por simulación histórica
     
@@ -14,6 +14,7 @@ def compute_historical_var(prices, nominal, confidence=0.95):
         prices (array-like): Precios históricos ordenados cronológicamente (antiguo...reciente)
         nominal (float): Cantidad del instrumento (positivo)
         confidence (float): Nivel de confianza (e.g. 0.95 para VaR 95%)
+        base_price (float): Precio base para comparación (si es None, usa el último precio)
     
     Returns:
         dict: Resultado con shocks, precios simulados, P&L, VaR, etc.
@@ -29,8 +30,9 @@ def compute_historical_var(prices, nominal, confidence=0.95):
     # Calcular shocks (retornos): Precio_t / Precio_{t-1}
     shocks = prices[1:] / prices[:-1]
     
-    # Precio base = último precio en la serie
-    base_price = prices[-1]
+    # Precio base: si no se proporciona, usar el último precio de la serie
+    if base_price is None:
+        base_price = prices[-1]
     
     # Precios simulados aplicando cada shock al precio base
     simulated_prices = base_price * shocks
@@ -129,7 +131,7 @@ class VaRCalculator:
         
         nominal = port_activo["Nominal"].iloc[0]
         
-        # Obtener precios históricos hasta la fecha
+        # Obtener precios históricos hasta la fecha (incluyendo la fecha de análisis)
         df_precios_filt = df_prices[
             (df_prices["Fecha"] <= fecha_dt) & 
             (df_prices["Nemonico"] == activo)
@@ -139,15 +141,25 @@ class VaRCalculator:
         if df_precios_filt.empty or len(df_precios_filt) < 2:
             return None, f"No hay suficientes precios históricos para {activo}"
         
+        # Obtener el precio base (precio en la fecha de análisis)
+        precio_en_fecha = df_precios_filt[df_precios_filt["Fecha"] == fecha_dt]
+        if precio_en_fecha.empty:
+            return None, f"No hay precio registrado para {activo} en {fecha_dt.strftime('%d/%m/%Y')}"
+        
+        base_price_value = float(pd.to_numeric(precio_en_fecha["Precio"].iloc[0], errors='coerce'))
+        
+        if pd.isna(base_price_value):
+            return None, f"Precio inválido para {activo} en {fecha_dt.strftime('%d/%m/%Y')}"
+        
         # Convertir precios a numérico
         prices = pd.to_numeric(df_precios_filt["Precio"], errors='coerce').dropna().values
         
         if len(prices) < 2:
             return None, "Precios inválidos o insuficientes"
         
-        # Calcular VaR
+        # Calcular VaR con el price base de la fecha especificada
         try:
-            res = compute_historical_var(prices, nominal, confidence)
+            res = compute_historical_var(prices, nominal, confidence, base_price=base_price_value)
         except Exception as e:
             return None, f"Error en cálculo: {str(e)}"
         

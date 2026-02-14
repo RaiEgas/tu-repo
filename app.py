@@ -37,7 +37,7 @@ def index():
     if request.method == 'POST':
         fecha_in = request.form.get('fecha', '').strip()
         activo = request.form.get('activo', '').strip()
-        confidence = float(request.form.get('confidence') or 0.95)
+        confidence = float(request.form.get('confianza') or 0.95)
 
         # Validar entrada
         if not fecha_in:
