@@ -1,0 +1,11 @@
+__pycache__/
+*.pyc
+instance/
+.env
+env/
+venv/
+dist/
+build/
+.pytest_cache/
+historical_var_simulations.csv
+/.vscode/

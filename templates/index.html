@@ -1,0 +1,62 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>VaR - Simulación Histórica</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  </head>
+  <body class="bg-light">
+    <div class="container py-4">
+      <h1 class="mb-4">VaR - Simulación Histórica</h1>
+
+      {% if error %}
+      <div class="alert alert-danger">{{ error }}</div>
+      {% endif %}
+
+      <form method="post" class="row g-3 mb-4">
+        <div class="col-md-3">
+          <label class="form-label">Fecha (DD/MM/YYYY)</label>
+          <input name="fecha" class="form-control" placeholder="Ej: 30/01/2024">
+        </div>
+        <div class="col-md-3">
+          <label class="form-label">Activo</label>
+          <select name="activo" class="form-select">
+            {% for a in assets %}
+              <option value="{{a}}">{{a}}</option>
+            {% endfor %}
+          </select>
+        </div>
+        <div class="col-md-2">
+          <label class="form-label">Confianza</label>
+          <input name="confidence" type="number" step="0.01" min="0.5" max="0.999" value="0.95" class="form-control">
+        </div>
+        <div class="col-md-2 align-self-end">
+          <button class="btn btn-primary">Calcular VaR</button>
+        </div>
+      </form>
+
+      {% if result %}
+      <div class="card mb-4">
+        <div class="card-body">
+          <h5 class="card-title">Resultado</h5>
+          <p class="card-text">
+            <strong>Activo:</strong> {{ result.activo }}<br>
+            <strong>Fecha:</strong> {{ result.fecha }}<br>
+            <strong>Nominal:</strong> {{ result.nominal }} unidades<br>
+            <strong>Precio base:</strong> ${{ result.base_price }}<br>
+            <strong>MtM base:</strong> ${{ result.mtm_base }}<br>
+            <strong>VaR ({{ (result.confidence*100)|int }}%):</strong> ${{ result.var }}<br>
+          </p>
+        </div>
+      </div>
+
+      <h5>Simulaciones</h5>
+      <div class="table-responsive">{{ table_html | safe }}</div>
+      {% endif %}
+
+      <hr>
+      <p class="text-muted small">Conectado a Supabase: datos desde `RV.Positions` y `RV.Price`.</p>
+    </div>
+  </body>
+</html>
