@@ -1,62 +1,113 @@
 <!doctype html>
-<html lang="en">
+<html lang="es">
   <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>VaR - Simulación Histórica</title>
+    <title>VaR RV - Simulación Histórica</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+      body { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); min-height: 100vh; }
+      .card { box-shadow: 0 4px 6px rgba(0,0,0,0.1); border: none; }
+      .card-header { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; font-weight: bold; }
+      .btn-primary { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); border: none; }
+      .btn-primary:hover { background: linear-gradient(135deg, #764ba2 0%, #667eea 100%); }
+      .result-badge { display: inline-block; padding: 0.5rem 1rem; border-radius: 0.25rem; color: white; font-weight: bold; }
+      .var-value { font-size: 2rem; font-weight: bold; color: #dc3545; }
+      .table-container { margin-top: 2rem; }
+      h1 { color: white; font-weight: bold; text-shadow: 2px 2px 4px rgba(0,0,0,0.2); }
+    </style>
   </head>
-  <body class="bg-light">
-    <div class="container py-4">
-      <h1 class="mb-4">VaR - Simulación Histórica</h1>
+  <body>
+    <div class="container py-5">
+      <h1 class="mb-4">💰 VaR RV - Simulación Histórica</h1>
 
       {% if error %}
-      <div class="alert alert-danger">{{ error }}</div>
+      <div class="alert alert-danger alert-dismissible fade show" role="alert">
+        <strong>Error:</strong> {{ error }}
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+      </div>
       {% endif %}
 
-      <form method="post" class="row g-3 mb-4">
-        <div class="col-md-3">
-          <label class="form-label">Fecha (DD/MM/YYYY)</label>
-          <input name="fecha" class="form-control" placeholder="Ej: 30/01/2024">
-        </div>
-        <div class="col-md-3">
-          <label class="form-label">Activo</label>
-          <select name="activo" class="form-select">
-            {% for a in assets %}
-              <option value="{{a}}">{{a}}</option>
-            {% endfor %}
-          </select>
-        </div>
-        <div class="col-md-2">
-          <label class="form-label">Confianza</label>
-          <input name="confidence" type="number" step="0.01" min="0.5" max="0.999" value="0.95" class="form-control">
-        </div>
-        <div class="col-md-2 align-self-end">
-          <button class="btn btn-primary">Calcular VaR</button>
-        </div>
-      </form>
-
-      {% if result %}
       <div class="card mb-4">
+        <div class="card-header">Parámetros de cálculo</div>
         <div class="card-body">
-          <h5 class="card-title">Resultado</h5>
-          <p class="card-text">
-            <strong>Activo:</strong> {{ result.activo }}<br>
-            <strong>Fecha:</strong> {{ result.fecha }}<br>
-            <strong>Nominal:</strong> {{ result.nominal }} unidades<br>
-            <strong>Precio base:</strong> ${{ result.base_price }}<br>
-            <strong>MtM base:</strong> ${{ result.mtm_base }}<br>
-            <strong>VaR ({{ (result.confidence*100)|int }}%):</strong> ${{ result.var }}<br>
-          </p>
+          <form method="post" class="row g-3">
+            <div class="col-md-3">
+              <label class="form-label">Fecha (DD/MM/YYYY)</label>
+              <input name="fecha" type="text" class="form-control" placeholder="Ej: 30/01/2024" value="{{ request.form.get('fecha', '') }}">
+              <small class="text-muted">Fecha de análisis para el VaR</small>
+            </div>
+            <div class="col-md-3">
+              <label class="form-label">Activo</label>
+              <select name="activo" class="form-select">
+                <option value="">-- Seleccione un activo --</option>
+                {% for a in assets %}
+                  <option value="{{a}}" {% if request.form.get('activo') == a %}selected{% endif %}>{{a}}</option>
+                {% endfor %}
+              </select>
+            </div>
+            <div class="col-md-2">
+              <label class="form-label">Confianza (%)</label>
+              <input name="confidence" type="number" step="0.01" min="0.5" max="0.999" value="{{ request.form.get('confidence', '0.95') }}" class="form-control">
+            </div>
+            <div class="col-md-2 align-self-end">
+              <button type="submit" class="btn btn-primary w-100">📊 Calcular VaR</button>
+            </div>
+            <div class="col-md-2 align-self-end">
+              <button type="reset" class="btn btn-outline-light w-100">🔄 Limpiar</button>
+            </div>
+          </form>
         </div>
       </div>
 
-      <h5>Simulaciones</h5>
-      <div class="table-responsive">{{ table_html | safe }}</div>
+      {% if result %}
+      <div class="row mb-4">
+        <div class="col-md-12">
+          <div class="card">
+            <div class="card-header">Resultados del VaR</div>
+            <div class="card-body">
+              <div class="row">
+                <div class="col-md-6">
+                  <p><strong>Activo:</strong> <span class="badge bg-info">{{ result.activo }}</span></p>
+                  <p><strong>Fecha de Análisis:</strong> {{ result.fecha }}</p>
+                  <p><strong>Posición Nominal:</strong> {{ result.nominal }} unidades</p>
+                  <p><strong>Confianza:</strong> {{ (result.confidence*100)|int }}%</p>
+                </div>
+                <div class="col-md-6">
+                  <p><strong>Precio Base:</strong> <span class="badge bg-success">${{ result.base_price }}</span></p>
+                  <p><strong>MtM Base:</strong> <span class="badge bg-info">${{ result.mtm_base }}</span></p>
+                  <p><strong>Percentil P&L:</strong> <span class="badge bg-warning">${{ result.percentile_value }}</span></p>
+                  <p class="mt-3"><strong>VaR ({{ (result.confidence*100)|int }}%):</strong> <span class="var-value">${{ result.var }}</span></p>
+                </div>
+              </div>
+              <small class="text-muted d-block mt-3">
+                Rango histórico: {{ result.fecha_min }} - {{ result.fecha_max }} 
+                ({{ result.num_precios }} precios, {{ result.num_shocks }} shocks)
+              </small>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="row">
+        <div class="col-md-12">
+          <div class="card table-container">
+            <div class="card-header">Simulaciones Históricas</div>
+            <div class="card-body" style="max-height: 400px; overflow-y: auto;">
+              {{ table_html | safe }}
+            </div>
+          </div>
+        </div>
+      </div>
       {% endif %}
 
-      <hr>
-      <p class="text-muted small">Conectado a Supabase: datos desde `RV.Positions` y `RV.Price`.</p>
+      <hr class="my-4" style="border-color: rgba(255,255,255,0.3);">
+      <p class="text-white small text-center">
+        🔗 Conectado a Supabase: <code style="background: rgba(0,0,0,0.2); padding: 0.25rem 0.5rem; border-radius: 3px;">RV.Positions</code> + 
+        <code style="background: rgba(0,0,0,0.2); padding: 0.25rem 0.5rem; border-radius: 3px;">RV.Price</code>
+      </p>
     </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
   </body>
 </html>
