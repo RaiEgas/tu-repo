@@ -46,34 +46,12 @@ def index():
             error = "Por favor seleccione un activo"
         else:
             # Calcular VaR
-            res, err = calculator.calculate_for_position(fecha_in, activo, confidence)
+            result, error = calculator.calculate_for_position(fecha_in, activo, confidence)
             
-            if err:
-                error = err
-            else:
-                result = {
-                    'activo': res['activo'],
-                    'fecha': res['fecha'],
-                    'nominal': res['nominal'],
-                    'confidence': res['confidence'],
-                    'base_price': f"{res['base_price']:.2f}",
-                    'mtm_base': f"{res['mtm_base']:.2f}",
-                    'var': f"{res['var']:.2f}",
-                    'percentile_value': f"{res['percentile_value']:.2f}",
-                    'num_precios': res['num_precios'],
-                    'num_shocks': res['num_shocks'],
-                    'fecha_min': res['fecha_min'],
-                    'fecha_max': res['fecha_max'],
-                }
-                
-                # Convertir tabla a HTML
-                table_html = res['simulaciones'].to_html(
-                    classes='table table-sm table-striped', 
-                    index=False, 
-                    float_format='%.4f'
-                )
+            if error:
+                result = None
 
-    return render_template('index.html', assets=assets, result=result, error=error, table_html=table_html)
+    return render_template('index.html', assets=assets, result=result, error=error)
 
 
 @app.route('/health', methods=['GET'])

@@ -155,23 +155,24 @@ class VaRCalculator:
         resultado = {
             "activo": activo,
             "fecha": fecha_dt.strftime("%d/%m/%Y"),
-            "nominal": int(nominal),
+            "fecha_analisis": fecha_dt.strftime("%d/%m/%Y"),
+            "nominal": float(nominal),
             "confidence": confidence,
-            "base_price": res["base_price"],
-            "mtm_base": res["mtm_base"],
-            "var": res["var"],
-            "percentile_value": res["percentile_value"],
+            "base_price": float(res["base_price"]),
+            "mtm_base": float(res["mtm_base"]),
+            "var": float(res["var"]),
+            "up": float(np.max(res["up"])),  # Máxima ganancia posible
+            "percentile_value": float(res["percentile_value"]),
+            "tail_pct": res["tail_pct"],
             "num_precios": len(prices),
             "num_shocks": len(res["shocks"]),
             "fecha_min": df_precios_filt["Fecha"].min().strftime("%d/%m/%Y"),
             "fecha_max": df_precios_filt["Fecha"].max().strftime("%d/%m/%Y"),
-            # Datos para tabla
+            # Datos para tabla con nombres esperados por template
             "simulaciones": pd.DataFrame({
-                "fecha": df_precios_filt["Fecha"].dt.strftime("%Y-%m-%d").values[1:],
-                "shock": res["shocks"],
-                "simulated_price": res["simulated_prices"],
-                "mtm_sim": res["mtm_sim"],
-                "up": res["up"]
+                "Shock": res["shocks"],
+                "Precio Simulado": res["simulated_prices"],
+                "P&L Simulado": res["up"]
             })
         }
         
